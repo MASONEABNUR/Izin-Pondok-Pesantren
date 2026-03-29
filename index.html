@@ -1,37 +1,212 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>E-Izin Pesantren</title>
     <style>
+        /* Reset & Base Style */
         body, html {
             margin: 0;
             padding: 0;
+            width: 100%;
             height: 100%;
-            overflow: hidden; /* Mencegah scroll double */
+            overflow: hidden;
+            background-color: #f0f4f2; /* Sage Light */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
-        
-        /* Container untuk membungkus iframe */
-        .wrapper {
+
+        /* Iframe Container */
+        .app-container {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            z-index: 2;
         }
 
         iframe {
             width: 100%;
-            /* Trik: Buat tinggi sedikit lebih besar (misal 105%) 
-               untuk mendorong tulisan 'dibuat oleh Google' ke luar area pandang */
-            height: calc(100% + 50px); 
+            height: 100%;
             border: none;
-            margin-top: -1px; /* Menghilangkan celah atas */
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10; /* Di atas segalanya saat awal */
+            transition: opacity 0.5s ease, visibility 0.5s;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e1e8e5;
+            border-top: 4px solid #50C878; /* Emerald Green */
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #2e4a3e;
+            font-size: 14px;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        /* Modern Notification (Toast) Styles */
+        #notification-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            width: 90%;
+            max-width: 400px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: #ffffff;
+            color: #2e4a3e;
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 5px solid #50C878;
+            pointer-events: auto;
+            
+            /* Animasi masuk */
+            animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            opacity: 0;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .toast.fade-out {
+            animation: slideOut 0.4s ease forwards;
+        }
+
+        @keyframes slideOut {
+            from { transform: translateY(0); opacity: 1; }
+            to { transform: translateY(-20px); opacity: 0; }
+        }
+
+        .toast-icon {
+            background: #e8f5ed;
+            color: #50C878;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-weight: bold;
+        }
+
+        .toast-message {
+            flex-grow: 1;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: #ccc;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0;
+            margin-left: 5px;
         }
     </style>
 </head>
 <body>
-    <div class="wrapper">
-        <iframe src="https://script.google.com/macros/s/AKfycbxvwJNyjM5e1XsDay1kd_cR8AdK8F7K6CUm-zq8_eGUpJvCr3RGeRuGtOBLtSp-SQlT/exec"></iframe>
+
+    <!-- Container untuk Notifikasi -->
+    <div id="notification-container"></div>
+
+    <div class="loading-screen" id="loader">
+        <div class="spinner"></div>
+        <div class="loading-text">MEMUAT SISTEM...</div>
     </div>
+
+    <div class="app-container">
+        <iframe 
+            id="app-frame"
+            src="https://script.google.com/macros/s/AKfycbxvwJNyjM5e1XsDay1kd_cR8AdK8F7K6CUm-zq8_eGUpJvCr3RGeRuGtOBLtSp-SQlT/exec" 
+            allow="geolocation; camera; microphone; fullscreen" 
+            allowfullscreen="true">
+        </iframe>
+    </div>
+
+    <script>
+        // Fungsi untuk menampilkan notifikasi modern
+        function showToast(message, duration = 4000) {
+            const container = document.getElementById('notification-container');
+            
+            // Buat elemen toast
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            
+            toast.innerHTML = `
+                <div class="toast-icon">✓</div>
+                <div class="toast-message">${message}</div>
+                <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+            `;
+
+            container.appendChild(toast);
+
+            // Hilangkan otomatis setelah durasi tertentu
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                setTimeout(() => {
+                    if(toast.parentElement) toast.remove();
+                }, 400);
+            }, duration);
+        }
+
+        // Simulasi Menghilangkan Loader & Memberi Notifikasi saat Siap
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('loader');
+            
+            // Beri sedikit jeda agar transisi terasa halus
+            setTimeout(() => {
+                loader.style.opacity = '0';
+                loader.style.visibility = 'hidden';
+                
+                // Panggil notifikasi modern alih-alih alert()
+                showToast("Sistem berhasil dimuat. Selamat bekerja!");
+            }, 1500);
+        });
+
+        // Contoh cara penggunaan di masa depan:
+        // Jika Anda ingin memanggil notifikasi dari dalam iframe atau event lain, 
+        // cukup panggil: showToast("Pesan Anda di sini");
+    </script>
+
 </body>
 </html>
