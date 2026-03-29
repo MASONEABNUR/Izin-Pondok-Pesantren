@@ -1,82 +1,37 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>E-Izin Pesantren</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f9;
-      margin: 0;
-    }
-    .container {
-      max-width: 500px;
-      margin: 50px auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-    h2 {
-      text-align: center;
-    }
-    input, button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-    }
-    button {
-      background: #4CAF50;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #45a049;
-    }
-    .result {
-      margin-top: 15px;
-      font-size: 14px;
-      color: green;
-    }
-  </style>
+    <title>E-Izin Pesantren</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden; /* Mencegah scroll double */
+        }
+        
+        /* Container untuk membungkus iframe */
+        .wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        iframe {
+            width: 100%;
+            /* Trik: Buat tinggi sedikit lebih besar (misal 105%) 
+               untuk mendorong tulisan 'dibuat oleh Google' ke luar area pandang */
+            height: calc(100% + 50px); 
+            border: none;
+            margin-top: -1px; /* Menghilangkan celah atas */
+        }
+    </style>
 </head>
 <body>
-
-<div class="container">
-  <h2>Form Izin Santri</h2>
-
-  <input type="text" id="nama" placeholder="Nama Santri">
-  <input type="text" id="alasan" placeholder="Alasan Izin">
-
-  <button onclick="kirimData()">Kirim Izin</button>
-
-  <div class="result" id="result"></div>
-</div>
-
-<script>
-  const url = "https://script.google.com/macros/s/AKfycbxvwJNyjM5e1XsDay1kd_cR8AdK8F7K6CUm-zq8_eGUpJvCr3RGeRuGtOBLtSp-SQlT/exec";
-
-  function kirimData() {
-    const nama = document.getElementById("nama").value;
-    const alasan = document.getElementById("alasan").value;
-
-    fetch(url, {
-      method: "POST",
-      body: JSON.stringify({ nama, alasan })
-    })
-    .then(res => res.text())
-    .then(data => {
-      document.getElementById("result").innerText = "Izin berhasil dikirim!";
-    })
-    .catch(err => {
-      document.getElementById("result").innerText = "Gagal mengirim.";
-    });
-  }
-</script>
-
+    <div class="wrapper">
+        <iframe src="https://script.google.com/macros/s/AKfycbxvwJNyjM5e1XsDay1kd_cR8AdK8F7K6CUm-zq8_eGUpJvCr3RGeRuGtOBLtSp-SQlT/exec"></iframe>
+    </div>
 </body>
 </html>
